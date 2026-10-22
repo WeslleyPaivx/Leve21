@@ -15,7 +15,7 @@ export function BookCover({ className = "" }: { className?: string }) {
             21<span className="text-gold">.</span>
           </p>
           <p className="mt-[8%] max-w-[85%] text-[0.62em] leading-snug text-cream/70">
-            Organização, autocuidado e pequenas mudanças
+            Alimentação, movimento e organização
           </p>
         </div>
         <svg viewBox="0 0 100 24" className="w-1/2 text-gold/80" fill="none" stroke="currentColor" strokeWidth="1">

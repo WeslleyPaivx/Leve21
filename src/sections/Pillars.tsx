@@ -2,54 +2,58 @@ import { useEffect, useRef, useState } from "react";
 import { pillars } from "../content";
 import { Reveal, useInView, prefersReducedMotion } from "../lib/motion";
 
-/** Ilustração abstrata de cada pilar (SVG leve, animado por CSS). */
+/** Ilustração abstrata de cada pilar (CSS leve, animada na troca de aba). */
 function PillarArt({ id }: { id: string }) {
-  if (id === "organizacao") {
+  if (id === "alimentacao") {
+    // um prato: metade vegetais, um quarto grãos, um quarto proteína (ilustrativo)
     return (
-      <div className="relative h-full w-full" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="swap-enter absolute left-1/2 w-[62%] -translate-x-1/2 rounded-2xl bg-cream p-4 shadow-[0_20px_40px_-20px_rgb(0_0_0/0.4)]"
-            style={{ top: `${18 + i * 20}%`, animationDelay: `${i * 120}ms`, rotate: `${(i - 1) * -3}deg` }}
-          >
-            <div className="flex items-center gap-3">
-              <span className={`h-4 w-4 rounded-full border-2 ${i === 0 ? "border-sage bg-sage" : "border-sage"}`} />
-              <span className="h-2 flex-1 rounded-full bg-ink/12" />
-            </div>
-          </div>
-        ))}
+      <div className="relative grid h-full w-full place-items-center" aria-hidden="true">
+        <span className="swap-enter absolute aspect-square w-[64%] rounded-full bg-cream/90 shadow-[0_30px_50px_-25px_rgb(0_0_0/0.45)]" />
+        <span
+          className="swap-enter absolute aspect-square w-[50%] rounded-full"
+          style={{
+            animationDelay: "120ms",
+            background:
+              "conic-gradient(from -30deg, #4f6b55 0 50%, #e6d4ad 50% 75%, #c9a96b 75% 100%)",
+          }}
+        />
+        <span className="swap-enter absolute aspect-square w-[22%] rounded-full bg-cream/95" style={{ animationDelay: "220ms" }} />
       </div>
     );
   }
-  if (id === "autocuidado") {
+  if (id === "movimento") {
     return (
-      <div className="relative grid h-full w-full place-items-center" aria-hidden="true">
-        {[1, 0.72, 0.46].map((s, i) => (
-          <span
-            key={i}
-            className="swap-enter absolute aspect-square rounded-full border border-cream/30"
-            style={{ width: `${s * 70}%`, animationDelay: `${i * 140}ms`, background: i === 2 ? "rgb(201 169 107 / 0.85)" : undefined }}
-          >
-            {i === 0 && <span className="breath absolute inset-0 rounded-full bg-cream/10" />}
-          </span>
-        ))}
-        <span className="relative font-display text-2xl italic text-forest-deep">respire</span>
+      <div className="relative h-full w-full" aria-hidden="true">
+        <div className="flex h-full w-full items-end justify-center gap-[4%] px-[14%] pb-[22%]">
+          {[22, 34, 46, 58, 70, 82].map((h, i) => (
+            <span
+              key={i}
+              className="swap-enter w-[12%] rounded-t-xl"
+              style={{
+                height: `${h}%`,
+                animationDelay: `${i * 90}ms`,
+                background: i === 5 ? "var(--color-gold)" : `rgb(247 243 234 / ${0.18 + i * 0.1})`,
+              }}
+            />
+          ))}
+        </div>
+        <span className="absolute inset-x-0 bottom-[8%] text-center font-display text-xl italic text-forest-deep">no seu ritmo</span>
       </div>
     );
   }
   return (
-    <div className="flex h-full w-full items-end justify-center gap-[4%] px-[14%] pb-[18%]" aria-hidden="true">
-      {[22, 34, 46, 58, 70, 82].map((h, i) => (
-        <span
-          key={i}
-          className="swap-enter w-[12%] rounded-t-xl"
-          style={{
-            height: `${h}%`,
-            animationDelay: `${i * 90}ms`,
-            background: i === 5 ? "var(--color-gold)" : `rgb(247 243 234 / ${0.18 + i * 0.1})`,
-          }}
-        />
+    <div className="relative h-full w-full" aria-hidden="true">
+      {["Lista de compras", "Plano B", "Pausa"].map((label, i) => (
+        <div
+          key={label}
+          className="swap-enter absolute left-1/2 w-[64%] -translate-x-1/2 rounded-2xl bg-cream p-4 shadow-[0_20px_40px_-20px_rgb(0_0_0/0.4)]"
+          style={{ top: `${16 + i * 22}%`, animationDelay: `${i * 120}ms`, rotate: `${(i - 1) * -3}deg` }}
+        >
+          <div className="flex items-center gap-3">
+            <span className={`h-4 w-4 shrink-0 rounded-full border-2 ${i === 0 ? "border-sage bg-sage" : "border-sage"}`} />
+            <span className="text-sm font-semibold text-forest">{label}</span>
+          </div>
+        </div>
       ))}
     </div>
   );

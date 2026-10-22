@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { weeks } from "../content";
+import { days, weeks } from "../content";
 import { Reveal, onScrollFrame, prefersReducedMotion } from "../lib/motion";
 
 const weekOf = (day: number) => weeks.findIndex((w) => day >= w.days[0] && day <= w.days[1]);
@@ -121,9 +121,15 @@ export function Journey() {
               })}
             </div>
           </div>
-          <p className="mt-3 text-sm text-cream/65" aria-live="polite">
-            <span className="font-semibold text-gold-soft">Dia {String(day).padStart(2, "0")}</span> · Semana {w.n} · {w.theme}
-          </p>
+          <div className="mt-5 min-h-[92px]" aria-live="polite">
+            <div key={day} className="swap-enter">
+              <p className="text-sm text-cream/70">
+                <span className="font-semibold text-gold-soft">Dia {String(day).padStart(2, "0")}</span> · Semana {w.n} · {w.theme}
+              </p>
+              <p className="mt-1 font-display text-2xl text-cream md:text-3xl">{days[day - 1].title}</p>
+              <p className="mt-1 max-w-[52ch] text-cream/70">{days[day - 1].text}</p>
+            </div>
+          </div>
         </Reveal>
 
         {/* cartões das semanas */}
@@ -156,11 +162,11 @@ export function Journey() {
                   </span>
                   <span className={`mt-5 leading-relaxed ${on ? "text-ink/70" : "text-cream/60"}`}>{wk.text}</span>
                   <span
-                    className={`mt-8 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    className={`mt-8 inline-flex w-fit items-center gap-2 rounded-2xl px-3 py-1.5 text-xs font-semibold ${
                       on ? "bg-sage/20 text-forest" : "bg-cream/10 text-cream/70"
                     }`}
                   >
-                    Pilar · {wk.pillar}
+                    “{wk.reminder}”
                   </span>
                 </button>
               </Reveal>

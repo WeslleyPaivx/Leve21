@@ -59,7 +59,7 @@ export function Preview() {
   const slides = usingReal
     ? previewImages.map((im) => ({
         label: im.alt,
-        node: <img src={im.src} alt={im.alt} loading="lazy" decoding="async" className="h-full w-full rounded-[14px] object-cover" />,
+        node: <img src={im.src} alt={im.alt} loading="lazy" decoding="async" className="h-full w-full object-cover" width={695} height={983} />,
       }))
     : illustrative;
 
@@ -139,7 +139,7 @@ export function Preview() {
             }`}
           >
             <Reveal variant="up" delay={i * 90}>
-              <div className="aspect-[3/4.2] w-full transition-transform duration-700 hover:-translate-y-2 hover:rotate-[-1deg]">{s.node}</div>
+              <div className="aspect-[210/297] w-full overflow-hidden rounded-[14px] shadow-[0_24px_50px_-24px_rgb(38_61_50/0.45)] transition-transform duration-700 hover:-translate-y-2 hover:rotate-[-1deg]">{s.node}</div>
               <figcaption className="mt-4 text-sm font-medium text-forest/70">{s.label}</figcaption>
             </Reveal>
           </figure>

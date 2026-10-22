@@ -23,7 +23,8 @@ export function Footer() {
             <p>
               <strong className="font-semibold text-cream/80">Aviso importante.</strong> O Leve21 é um conteúdo educativo
               sobre organização, autocuidado e hábitos. Não é tratamento, não promete resultados específicos e não substitui
-              a orientação de médico, nutricionista, psicólogo ou outro profissional de saúde.
+              a orientação de médico, nutricionista, psicólogo ou outro profissional de saúde. O material traduz
+              recomendações públicas e ainda não passou por revisão profissional individual.
             </p>
             <p>
               Os pagamentos são processados pela Cakto. Este site não coleta, não processa e não armazena dados de pagamento,

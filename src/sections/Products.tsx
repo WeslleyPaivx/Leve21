@@ -28,7 +28,7 @@ export function Products() {
                 <div className="book3d aspect-[3/4.2]" data-open={open}>
                   <div className="inner paper flex flex-col justify-center gap-3 p-[12%] text-left">
                     <span className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-gold">Boas-vindas</span>
-                    <span className="font-display text-lg italic leading-tight text-forest">Uma rotina mais leve começa aqui.</span>
+                    <span className="font-display text-lg italic leading-tight text-forest">Hábitos reais. Rotina possível.</span>
                     <span className="h-1.5 w-11/12 rounded-full bg-ink/10" />
                     <span className="h-1.5 w-4/5 rounded-full bg-ink/10" />
                     <span className="h-1.5 w-2/3 rounded-full bg-ink/10" />
