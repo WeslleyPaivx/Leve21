@@ -69,10 +69,11 @@ body {
     opacity 0.9s var(--ease-out-expo) var(--d, 0ms),
     transform 1.1s var(--ease-out-expo) var(--d, 0ms),
     filter 0.9s var(--ease-out-expo) var(--d, 0ms);
-  will-change: opacity, transform;
 }
+/* will-change só enquanto espera para aparecer: menos camadas de GPU no celular */
 .reveal[data-in="false"] {
   opacity: 0;
+  will-change: opacity, transform;
 }
 .reveal-up[data-in="false"] {
   transform: translate3d(0, 40px, 0);
@@ -112,25 +113,39 @@ body {
 }
 
 /* ---------- hero ---------- */
+/* O desfoque fica num pseudo-elemento parado dentro da mancha: é desenhado uma vez
+   e a mancha apenas desliza (transform no compositor). Mesmo visual, sem blur por quadro. */
 .hero-aurora {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
   opacity: 0.55;
   will-change: transform;
 }
+.hero-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: blur(60px);
+}
 .aurora-1 {
-  background: radial-gradient(circle, #849b83 0%, transparent 65%);
   animation: drift1 18s ease-in-out infinite alternate;
 }
+.aurora-1::before {
+  background: radial-gradient(circle, #849b83 0%, transparent 65%);
+}
 .aurora-2 {
-  background: radial-gradient(circle, #c9a96b 0%, transparent 62%);
   opacity: 0.35;
   animation: drift2 22s ease-in-out infinite alternate;
 }
+.aurora-2::before {
+  background: radial-gradient(circle, #c9a96b 0%, transparent 62%);
+}
 .aurora-3 {
-  background: radial-gradient(circle, #3e5c4c 0%, transparent 65%);
   animation: drift3 26s ease-in-out infinite alternate;
+}
+.aurora-3::before {
+  background: radial-gradient(circle, #3e5c4c 0%, transparent 65%);
 }
 @keyframes drift1 {
   to { transform: translate3d(18%, 12%, 0) scale(1.2); }
@@ -169,16 +184,22 @@ body {
   to { opacity: 1; transform: none; }
 }
 
+/* rotação base em propriedade própria; keyframes sem variáveis CSS = animação no compositor */
+.float-a,
+.float-b,
+.float-c {
+  rotate: var(--r, 0deg);
+}
 .float-a { animation: floatA 7s ease-in-out infinite; }
 .float-b { animation: floatB 9s ease-in-out infinite; }
 .float-c { animation: floatA 8s ease-in-out -3s infinite; }
 @keyframes floatA {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)); }
-  50% { transform: translate3d(0, -12px, 0) rotate(calc(var(--r, 0deg) + 1.5deg)); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -12px, 0) rotate(1.5deg); }
 }
 @keyframes floatB {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)); }
-  50% { transform: translate3d(0, 10px, 0) rotate(calc(var(--r, 0deg) - 1.5deg)); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, 10px, 0) rotate(-1.5deg); }
 }
 
 .parallax {
@@ -420,6 +441,21 @@ body {
   transform: translate3d(0, 120%, 0);
   opacity: 0;
   pointer-events: none;
+}
+
+/* ---------- animações pausadas fora da tela (economia de CPU/GPU) ---------- */
+[data-offscreen="true"],
+[data-offscreen="true"]::before,
+[data-offscreen="true"]::after,
+[data-offscreen="true"] *,
+[data-offscreen="true"] *::before,
+[data-offscreen="true"] *::after {
+  animation-play-state: paused !important;
+}
+
+.noscript-msg {
+  padding: 24px;
+  font-family: var(--font-sans);
 }
 
 /* ---------- movimento reduzido ---------- */

@@ -1,21 +1,65 @@
-# Netlify — plano gratuito. Nenhuma função, banco ou add-on pago é usado.
+# Netlify — plano gratuito. Nenhuma função, banco, formulário ou add-on pago é usado.
 [build]
   command = "npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
+  # Instala sem rodar scripts de pacotes (proteção contra ataques na cadeia de dependências).
+  NPM_CONFIG_IGNORE_SCRIPTS = "true"
 
-# Arquivos com hash: cache longo
+# ---------------------------------------------------------------------------
+# Cabeçalhos de segurança (todas as páginas)
+# CSP: só carrega código do próprio site; fontes do Google Fonts; nenhuma
+# conexão externa, iframe, plugin, formulário ou execução de script injetado.
+# Os links de compra apenas NAVEGAM até pay.cakto.com.br (CSP não bloqueia).
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = """
+      default-src 'none';
+      script-src 'self';
+      style-src 'self' https://fonts.googleapis.com;
+      font-src https://fonts.gstatic.com;
+      img-src 'self' data:;
+      media-src 'self';
+      connect-src 'self';
+      manifest-src 'self';
+      frame-src 'none';
+      worker-src 'none';
+      object-src 'none';
+      base-uri 'none';
+      form-action 'none';
+      frame-ancestors 'none';
+      require-trusted-types-for 'script';
+      trusted-types 'none';
+      upgrade-insecure-requests
+    """
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "same-origin"
+    Origin-Agent-Cluster = "?1"
+    X-Permitted-Cross-Domain-Policies = "none"
+    X-XSS-Protection = "0"
+    Permissions-Policy = "accelerometer=(), ambient-light-sensor=(), autoplay=(self), battery=(), bluetooth=(), browsing-topics=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=()"
+
+# HTML sempre revalidado, para atualizações aparecerem na hora
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Arquivos com hash no nome: cache longo e imutável
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/*"
+  for = "/previews/*"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Frame-Options = "DENY"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Cache-Control = "public, max-age=604800"

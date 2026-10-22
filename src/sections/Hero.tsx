@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { hero, marquee } from "../content";
 import { config } from "../config";
-import { prefersReducedMotion, scrollToId, useParallax, onScrollFrame } from "../lib/motion";
+import { prefersReducedMotion, scrollToId, useParallax, onScrollFrame, usePauseOffscreen } from "../lib/motion";
 import { BookCover, PlannerPage } from "../components/Mockups";
 
 function HeroVideo() {
@@ -39,16 +39,23 @@ export function Hero() {
   const backBook = useParallax<HTMLDivElement>(0.08);
   const chip = useParallax<HTMLDivElement>(-0.14);
   const content = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  usePauseOffscreen(sectionRef);
 
   // Saída cinematográfica: o texto desvanece e recua ao rolar.
   useEffect(() => {
     if (prefersReducedMotion()) return;
+    let last = -1;
     return onScrollFrame((y, vh) => {
       const el = content.current;
       if (!el) return;
-      const p = Math.min(1, Math.max(0, y / (vh * 0.85)));
-      el.style.opacity = String(1 - p * 0.9);
-      el.style.transform = `translate3d(0, ${p * -40}px, 0) scale(${1 - p * 0.04})`;
+      const p = Math.round(Math.min(1, Math.max(0, y / (vh * 0.85))) * 1000) / 1000;
+      if (p === last) return; // já fora do hero: nada a escrever
+      last = p;
+      return () => {
+        el.style.opacity = String(1 - p * 0.9);
+        el.style.transform = `translate3d(0, ${p * -40}px, 0) scale(${1 - p * 0.04})`;
+      };
     });
   }, []);
 
@@ -56,6 +63,7 @@ export function Hero() {
 
   return (
     <section
+      ref={sectionRef}
       id="topo"
       className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-forest-deep text-cream"
       aria-labelledby="hero-title"

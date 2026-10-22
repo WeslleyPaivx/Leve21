@@ -6,15 +6,18 @@ import { config } from "../config";
 /** Barra de progresso de rolagem (transform: scaleX, sem re-render). */
 export function ScrollProgress() {
   const bar = useRef<HTMLDivElement>(null);
-  useEffect(
-    () =>
-      onScrollFrame((y, vh) => {
-        const max = document.documentElement.scrollHeight - vh;
-        const p = max > 0 ? Math.min(1, y / max) : 0;
+  useEffect(() => {
+    let last = -1;
+    return onScrollFrame((y, vh) => {
+      const max = document.documentElement.scrollHeight - vh;
+      const p = Math.round((max > 0 ? Math.min(1, y / max) : 0) * 1000) / 1000;
+      if (p === last) return;
+      last = p;
+      return () => {
         if (bar.current) bar.current.style.transform = `scaleX(${p})`;
-      }),
-    [],
-  );
+      };
+    });
+  }, []);
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px]" aria-hidden="true">
       <div ref={bar} className="h-full origin-left bg-gold" style={{ transform: "scaleX(0)" }} />
@@ -31,7 +34,16 @@ const NAV = [
 
 export function Header() {
   const [solid, setSolid] = useState(false);
-  useEffect(() => onScrollFrame((y, vh) => setSolid(y > vh * 0.75)), []);
+  useEffect(() => {
+    let last: boolean | null = null;
+    return onScrollFrame((y, vh) => {
+      const next = y > vh * 0.75;
+      if (next !== last) {
+        last = next;
+        setSolid(next);
+      }
+    });
+  }, []);
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,color] duration-500 ${
@@ -75,20 +87,26 @@ export function Header() {
 /** Botão de compra fixo no mobile: aparece após o hero e some na oferta/rodapé. */
 export function StickyBuy() {
   const [show, setShow] = useState(false);
-  useEffect(
-    () =>
-      onScrollFrame((y, vh) => {
-        const offer = document.getElementById("oferta");
-        const foot = document.getElementById("rodape");
-        const hide = (el: HTMLElement | null) => {
-          if (!el) return false;
-          const r = el.getBoundingClientRect();
-          return r.top < vh * 0.9 && r.bottom > 0;
-        };
-        setShow(y > vh * 0.9 && !hide(offer) && !hide(foot));
-      }),
-    [],
-  );
+  useEffect(() => {
+    // A barra só existe no celular: no desktop não mede nada a cada quadro.
+    const mobile = window.matchMedia("(max-width: 767.98px)");
+    const offer = document.getElementById("oferta");
+    const foot = document.getElementById("rodape");
+    let last: boolean | null = null;
+    const hide = (el: HTMLElement | null, vh: number) => {
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.top < vh * 0.9 && r.bottom > 0;
+    };
+    return onScrollFrame((y, vh) => {
+      if (!mobile.matches) return;
+      const next = y > vh * 0.9 && !hide(offer, vh) && !hide(foot, vh);
+      if (next !== last) {
+        last = next;
+        setShow(next);
+      }
+    });
+  }, []);
   return (
     <div
       className="sticky-buy fixed inset-x-0 bottom-0 z-40 px-3 pt-3 md:hidden"

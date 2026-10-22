@@ -1,15 +1,18 @@
 import { offer } from "../content";
 import { config } from "../config";
-import { Reveal, useTilt } from "../lib/motion";
+import { useRef } from "react";
+import { Reveal, useTilt, usePauseOffscreen } from "../lib/motion";
 import { BuyButton } from "../components/BuyButton";
 import { BookCover, PlannerPage } from "../components/Mockups";
 
 export function Offer() {
   const tilt = useTilt<HTMLDivElement>(6);
   const [reais, centavos] = config.price.split(",");
+  const sectionRef = useRef<HTMLElement>(null);
+  usePauseOffscreen(sectionRef);
 
   return (
-    <section id="oferta" className="relative overflow-hidden bg-cream py-24 md:py-36" aria-labelledby="oferta-title">
+    <section ref={sectionRef} id="oferta" className="relative overflow-hidden bg-cream py-24 md:py-36" aria-labelledby="oferta-title">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <Reveal variant="scale">
           <div

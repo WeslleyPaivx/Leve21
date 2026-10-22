@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { days, weeks } from "../content";
-import { Reveal, onScrollFrame, prefersReducedMotion } from "../lib/motion";
+import { Reveal, onScrollFrame, prefersReducedMotion, usePauseOffscreen } from "../lib/motion";
 
 const weekOf = (day: number) => weeks.findIndex((w) => day >= w.days[0] && day <= w.days[1]);
 
@@ -9,21 +9,27 @@ export function Journey() {
   const [day, setDay] = useState<number>(1);
   const section = useRef<HTMLElement>(null);
   const fill = useRef<HTMLDivElement>(null);
+  usePauseOffscreen(section);
   const row = useRef<HTMLDivElement>(null);
   const programmatic = useRef(0);
 
   // Linha dos 21 dias preenche conforme a rolagem pela seção.
-  useEffect(
-    () =>
-      onScrollFrame((_, vh) => {
-        const el = section.current;
-        if (!el || !fill.current) return;
-        const r = el.getBoundingClientRect();
-        const p = prefersReducedMotion() ? 1 : Math.min(1, Math.max(0, (vh * 0.8 - r.top) / (r.height * 0.6)));
-        fill.current.style.transform = `scaleX(${p})`;
-      }),
-    [],
-  );
+  useEffect(() => {
+    let last = -1;
+    return onScrollFrame((_, vh) => {
+      const el = section.current;
+      const bar = fill.current;
+      if (!el || !bar) return;
+      const r = el.getBoundingClientRect();
+      const raw = prefersReducedMotion() ? 1 : Math.min(1, Math.max(0, (vh * 0.8 - r.top) / (r.height * 0.6)));
+      const p = Math.round(raw * 1000) / 1000;
+      if (p === last) return;
+      last = p;
+      return () => {
+        bar.style.transform = `scaleX(${p})`;
+      };
+    });
+  }, []);
 
   const selectWeek = (i: number, scroll = true) => {
     setWeek(i);
@@ -41,7 +47,17 @@ export function Journey() {
   };
 
   // No mobile, rolar o carrossel atualiza a semana ativa.
+  // Mede o carrossel no máximo uma vez por quadro.
+  const rowRaf = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(rowRaf.current), []);
   const onRowScroll = () => {
+    if (rowRaf.current) return;
+    rowRaf.current = requestAnimationFrame(() => {
+      rowRaf.current = 0;
+      measureRow();
+    });
+  };
+  const measureRow = () => {
     const el = row.current;
     if (!el || el.scrollWidth <= el.clientWidth || Date.now() < programmatic.current) return;
     const center = el.scrollLeft + el.clientWidth / 2;

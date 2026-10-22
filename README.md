@@ -43,3 +43,16 @@ Nenhum recurso pago é usado (sem functions, forms, banco ou add-ons).
 | Vídeo de fundo do hero | `VITE_HERO_VIDEO_URL` / `VITE_HERO_POSTER_URL` |
 
 Antes de vender, veja **PENDENCIAS.md**.
+
+## Segurança
+
+- **CSP estrita** (`netlify.toml`): só executa código do próprio site, sem scripts inline, sem iframes, sem formulários,
+  sem conexões externas e com Trusted Types obrigatório. Fontes vêm só do Google Fonts.
+- **Cabeçalhos**: HSTS, X-Frame-Options DENY, COOP/CORP same-origin, nosniff, Referrer-Policy e Permissions-Policy
+  bloqueando câmera, microfone, localização, pagamento e outros recursos.
+- **Checkout**: aceita apenas `https://pay.cakto.com.br/<id>` exato (sem porta, usuário, `@` ou `\`).
+  Repasse apenas de `utm_*`, `src` e `sck`, com valores filtrados.
+- **Variáveis**: preço, garantia, e-mail e caminhos de mídia são validados; valores fora do formato são ignorados.
+  Vídeo e imagem do hero precisam estar no próprio site (`public/media/`).
+- **Dependências**: versões fixas e `ignore-scripts` (instalação sem rodar scripts de terceiros).
+- **Privacidade**: nenhum cookie, rastreador ou coleta de dados. Os PDFs nunca ficam no site.

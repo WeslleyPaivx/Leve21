@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { previewImages } from "../content";
 import { Reveal, prefersReducedMotion } from "../lib/motion";
 import { BookCover, PlannerPage } from "../components/Mockups";
@@ -71,7 +71,17 @@ export function Preview() {
     el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.clientWidth) / 2, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
+  // Mede o carrossel no máximo uma vez por quadro.
+  const rowRaf = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(rowRaf.current), []);
   const onScroll = () => {
+    if (rowRaf.current) return;
+    rowRaf.current = requestAnimationFrame(() => {
+      rowRaf.current = 0;
+      measure();
+    });
+  };
+  const measure = () => {
     const el = row.current;
     if (!el) return;
     const center = el.scrollLeft + el.clientWidth / 2;

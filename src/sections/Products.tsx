@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { products } from "../content";
-import { Reveal, useTilt } from "../lib/motion";
+import { Reveal, useTilt, usePauseOffscreen } from "../lib/motion";
 import { BookCover, PlannerPage } from "../components/Mockups";
 
 export function Products() {
@@ -8,9 +8,11 @@ export function Products() {
   const [open, setOpen] = useState(false);
   const tilt = useTilt<HTMLDivElement>(12);
   const p = products[tab];
+  const sectionRef = useRef<HTMLElement>(null);
+  usePauseOffscreen(sectionRef);
 
   return (
-    <section id="material" className="relative overflow-hidden bg-cream-deep py-24 md:py-36" aria-labelledby="material-title">
+    <section ref={sectionRef} id="material" className="relative overflow-hidden bg-cream-deep py-24 md:py-36" aria-labelledby="material-title">
       <div className="pointer-events-none absolute -right-40 top-10 h-[480px] w-[480px] rounded-full bg-sage/20 blur-3xl" aria-hidden="true" />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 md:grid-cols-2 md:gap-16 md:px-8">
         {/* palco do mockup */}
@@ -73,9 +75,19 @@ export function Products() {
                   aria-selected={tab === i}
                   aria-controls="produto-panel"
                   id={`produto-tab-${i}`}
+                  tabIndex={tab === i ? 0 : -1}
                   onClick={() => {
                     setTab(i);
                     setOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      const n = (i + 1) % products.length;
+                      setTab(n);
+                      setOpen(false);
+                      document.getElementById(`produto-tab-${n}`)?.focus();
+                    }
                   }}
                   className={`relative rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-500 ${
                     tab === i ? "bg-forest text-cream shadow-md" : "text-forest/60 hover:text-forest"

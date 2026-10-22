@@ -15,31 +15,46 @@ import {
   type RefObject,
 } from "react";
 
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduceMQ =
+  typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+export const prefersReducedMotion = () => !!reduceMQ?.matches;
 
 export function useReducedMotion() {
   const [reduced, setReduced] = useState(prefersReducedMotion);
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const on = () => setReduced(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
+    if (!reduceMQ) return;
+    const on = () => setReduced(reduceMQ.matches);
+    reduceMQ.addEventListener("change", on);
+    return () => reduceMQ.removeEventListener("change", on);
   }, []);
   return reduced;
 }
 
-/* ---------- loop único de rolagem ---------- */
-type ScrollFn = (y: number, vh: number) => void;
+/* ---------- loop único de rolagem ----------
+ * Cada assinante LÊ o que precisa (posições, medidas) e devolve opcionalmente uma
+ * função que ESCREVE (estilos). Todas as leituras acontecem antes de todas as
+ * escritas no mesmo quadro, evitando recálculos forçados de layout/estilo.
+ */
+type Writer = () => void;
+type ScrollFn = (y: number, vh: number) => Writer | void;
 const subscribers = new Set<ScrollFn>();
 let ticking = false;
 let listening = false;
 
-function run() {
-  ticking = false;
+function flush(fns: Iterable<ScrollFn>) {
   const y = window.scrollY;
   const vh = window.innerHeight;
-  subscribers.forEach((fn) => fn(y, vh));
+  const writes: Writer[] = [];
+  for (const fn of fns) {
+    const w = fn(y, vh);
+    if (w) writes.push(w);
+  }
+  for (const w of writes) w();
+}
+function run() {
+  ticking = false;
+  flush(subscribers);
 }
 function onScroll() {
   if (!ticking) {
@@ -54,7 +69,9 @@ export function onScrollFrame(fn: ScrollFn) {
     window.addEventListener("resize", onScroll, { passive: true });
     listening = true;
   }
-  requestAnimationFrame(() => fn(window.scrollY, window.innerHeight));
+  requestAnimationFrame(() => {
+    if (subscribers.has(fn)) flush([fn]);
+  });
   return () => {
     subscribers.delete(fn);
   };
@@ -66,15 +83,40 @@ export function useParallax<T extends HTMLElement>(speed = 0.1, axis: "y" | "x" 
   useEffect(() => {
     const el = ref.current;
     if (!el || prefersReducedMotion()) return;
+    let last = "";
     return onScrollFrame((_, vh) => {
       const r = el.getBoundingClientRect();
       if (r.bottom < -200 || r.top > vh + 200) return;
-      const delta = (r.top + r.height / 2 - vh / 2) * -speed;
-      el.style.setProperty("--px", axis === "x" ? `${delta.toFixed(1)}px` : "0px");
-      el.style.setProperty("--py", axis === "y" ? `${delta.toFixed(1)}px` : "0px");
+      const d = ((r.top + r.height / 2 - vh / 2) * -speed).toFixed(1);
+      const t = axis === "x" ? `translate3d(${d}px, 0px, 0)` : `translate3d(0px, ${d}px, 0)`;
+      if (t === last) return;
+      last = t;
+      // transform direto (não variável CSS herdada): recalcula só este elemento
+      return () => {
+        el.style.transform = t;
+      };
     });
   }, [speed, axis]);
   return ref;
+}
+
+/**
+ * Pausa animações infinitas (CSS) enquanto o elemento está fora da tela:
+ * marca data-offscreen="true" e o CSS pausa as animações dentro dele.
+ */
+export function usePauseOffscreen(ref: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        el.dataset.offscreen = e.isIntersecting ? "false" : "true";
+      },
+      { rootMargin: "120px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref]);
 }
 
 /** Visibilidade (uma vez por padrão). */
