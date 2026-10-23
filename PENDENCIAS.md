@@ -12,8 +12,8 @@
       A entrega é só pela área de membros da Cakto.
 
 ## Cakto
-- [ ] Criar/confirmar o produto e a oferta de **R$ 39,90** e copiar o link do checkout para `VITE_CAKTO_CHECKOUT_URL`.
-- [ ] Conferir se o preço exibido (`VITE_PRICE`) é igual ao da oferta.
+- [x] Produto e oferta de **R$ 39,90** criados na Cakto; link do checkout configurado na Netlify (`VITE_CAKTO_CHECKOUT_URL`).
+- [x] Preço exibido (R$ 39,90) igual ao da oferta. Atenção: a Cakto soma R$ 0,99 de taxa de serviço no checkout (total R$ 40,89).
 - [ ] Confirmar o prazo de garantia configurado na Cakto e ajustar `VITE_GUARANTEE_DAYS` (vazio = oculto).
 - [ ] Configurar a **Cakto Members** com os dois PDFs e fazer uma compra de teste para validar o e-mail de acesso.
 - [ ] Confirmar no painel quais parâmetros de rastreio a Cakto registra além de `utm_source`, `utm_medium`, `utm_campaign`.
